@@ -15,6 +15,7 @@
 <div id="code">Connexion réussie. Copie l'adresse complète de cette page et renvoie-la à Claude.<br>Login successful. Copy the full address of this page and send it back.</div>
 
 <h1>QG Barnabe</h1>
+<p><a href="studio.html">Open the publishing studio →</a></p>
 <p class="muted">Barnabé raconte · Barnaby tells — dernière mise à jour : 25 octobre 2026</p>
 <p>QG Barnabe est un outil personnel et privé, utilisé uniquement par son propriétaire pour publier et suivre les vidéos de ses propres comptes « Barnabé raconte » (FR) et « Barnaby tells » (EN) sur TikTok, Instagram, Facebook et YouTube. Il n'est pas proposé au public.</p>
 
@@ -38,7 +39,8 @@
 <p class="muted">EN — The tool only accesses the owner's own account data (profile info, video list and statistics). Data is used solely for a private dashboard and to publish the owner's videos. No data is sold or shared with third parties. Access tokens are stored privately and can be revoked at any time. Contact: barnabe.raconte@gmail.com.</p>
 
 <script>
-  if (location.search.includes("code=")) document.getElementById("code").style.display = "block";
+  if (new URLSearchParams(location.search).get("state")?.startsWith("studio_")) location.replace("studio.html" + location.search);
+  else if (location.search.includes("code=")) document.getElementById("code").style.display = "block";
 </script>
 </body>
 </html>

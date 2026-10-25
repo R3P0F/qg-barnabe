@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QG Barnabe Studio</title>
+<style>
+  :root{--bg:#120d0a;--panel:#1c1511;--line:#33261d;--ink:#f3e6d2;--muted:#b19d88;--amber:#e6b85c;--red:#fe2c55;--ok:#3ecf8e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+  header b{font-size:18px} header small{color:var(--muted)}
+  main{max-width:1000px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+  h2{font-size:16px;margin:0 0 12px;color:var(--amber)}
+  button{font:inherit;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;background:#2c211a;color:var(--ink)}
+  button.primary{background:var(--red);color:#fff;font-weight:600}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .creator{display:flex;gap:12px;align-items:center}
+  .creator img{width:44px;height:44px;border-radius:50%;background:#333}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+  .stat{background:#251c16;border-radius:8px;padding:10px;text-align:center}
+  .stat b{display:block;font-size:20px}
+  .stat span{color:var(--muted);font-size:12px}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+  td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:500} td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .post{display:grid;grid-template-columns:240px 1fr;gap:18px}
+  @media (max-width:720px){.post{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+  video{width:100%;border-radius:8px;background:#000;aspect-ratio:9/16}
+  label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+  select,textarea{width:100%;font:inherit;background:#120d0a;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px}
+  textarea{min-height:120px;resize:vertical}
+  .check{display:flex;gap:8px;align-items:center;margin:6px 0;color:var(--ink);font-size:14px}
+  .check input{width:18px;height:18px}
+  .sub{margin-left:26px}
+  .note{font-size:12px;color:var(--muted);margin-top:10px}
+  .note a{color:var(--amber)}
+  .msg{margin-top:12px;padding:10px;border-radius:8px;background:#251c16;font-size:14px;display:none}
+  .msg.ok{border-left:3px solid var(--ok)} .msg.err{border-left:3px solid var(--red)}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<header><div><b>QG Barnabe Studio</b><br><small>Private publishing tool for Barnabé raconte · Barnaby tells</small></div><div id="who"></div></header>
+<main>
+  <section class="panel" id="login">
+    <h2>1. Connect your TikTok account</h2>
+    <p>Log in with TikTok to let QG Barnabe read your profile statistics and publish your own videos.</p>
+    <button class="primary" id="btn-login">Continue with TikTok</button>
+  </section>
+
+  <section class="panel hide" id="profile">
+    <h2>2. My account and video statistics</h2>
+    <div class="creator"><img id="p-avatar" alt=""><div><b id="p-name"></b><br><small id="p-user"></small></div></div>
+    <div class="stats">
+      <div class="stat"><b id="s-followers">–</b><span>Followers</span></div>
+      <div class="stat"><b id="s-likes">–</b><span>Likes</span></div>
+      <div class="stat"><b id="s-videos">–</b><span>Videos</span></div>
+      <div class="stat"><b id="s-views">–</b><span>Views (listed videos)</span></div>
+    </div>
+    <table><thead><tr><th>Video</th><th class="n">Views</th><th class="n">Likes</th><th class="n">Comments</th><th class="n">Shares</th></tr></thead><tbody id="v-list"></tbody></table>
+  </section>
+
+  <section class="panel hide" id="compose">
+    <h2>3. Post a video to TikTok</h2>
+    <div class="creator" style="margin-bottom:10px"><img id="c-avatar" alt=""><div>Posting to <b id="c-name"></b></div></div>
+    <div class="post">
+      <div><video id="preview" controls playsinline></video></div>
+      <div>
+        <label for="pick">Video</label>
+        <select id="pick"></select>
+        <label for="caption">Caption</label>
+        <textarea id="caption" maxlength="2200"></textarea>
+        <label for="privacy">Who can view this video</label>
+        <select id="privacy"><option value="" disabled selected>Select privacy…</option></select>
+        <label>Allow users to</label>
+        <div class="check"><input type="checkbox" id="a-comment"><span>Comment</span></div>
+        <div class="check"><input type="checkbox" id="a-duet"><span>Duet</span></div>
+        <div class="check"><input type="checkbox" id="a-stitch"><span>Stitch</span></div>
+        <label>Content disclosure</label>
+        <div class="check"><input type="checkbox" id="aigc" checked><span>AI-generated content (synthetic voice-over)</span></div>
+        <div class="check"><input type="checkbox" id="commercial"><span>Disclose commercial content</span></div>
+        <div class="sub hide" id="commercial-opts">
+          <div class="check"><input type="checkbox" id="brand-organic"><span>Your brand — you are promoting yourself or your own business</span></div>
+          <div class="check"><input type="checkbox" id="brand-content"><span>Branded content — you are promoting another brand or a third party</span></div>
+        </div>
+        <p class="note" id="consent">By posting, you agree to TikTok's <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.</p>
+        <button class="primary" id="btn-post" disabled>Post to TikTok</button>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const API = "https://qg-barnabe.vercel.app/api";
+const CLIENT_KEY = "sbawbvgr71lcw4pozx";
+const REDIRECT = "https://r3p0f.github.io/qg-barnabe/";
+const SCOPES = "user.info.basic,user.info.profile,user.info.stats,video.list,video.upload,video.publish";
+const $ = id => document.getElementById(id);
+const fmt = n => (n ?? 0).toLocaleString("en-US");
+const call = (p, body) => fetch(API + p, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json());
+let token = sessionStorage.getItem("tt_token"), creator = null, videos = [];
+
+$("btn-login").onclick = () => {
+  const state = "studio_" + Math.random().toString(36).slice(2);
+  sessionStorage.setItem("tt_state", state);
+  location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({ client_key: CLIENT_KEY, scope: SCOPES, response_type: "code", redirect_uri: REDIRECT, state });
+};
+
+async function start() {
+  const q = new URLSearchParams(location.search);
+  if (q.get("code") && q.get("state") === sessionStorage.getItem("tt_state")) {
+    const r = await call("/token", { code: q.get("code"), redirect_uri: REDIRECT });
+    if (r.access_token) { token = r.access_token; sessionStorage.setItem("tt_token", token); }
+    history.replaceState(null, "", location.pathname);
+  }
+  if (!token) return;
+  $("login").classList.add("hide"); $("profile").classList.remove("hide"); $("compose").classList.remove("hide");
+  loadProfile(); loadCreator(); loadVideos();
+}
+
+async function loadProfile() {
+  const r = await call("/user", { token });
+  if (!r.user) { sessionStorage.removeItem("tt_token"); location.reload(); return; }
+  const u = r.user;
+  $("p-avatar").src = u.avatar_url; $("p-name").textContent = u.display_name; $("p-user").textContent = "@" + u.username;
+  $("who").textContent = "@" + u.username;
+  $("s-followers").textContent = fmt(u.follower_count); $("s-likes").textContent = fmt(u.likes_count); $("s-videos").textContent = fmt(u.video_count);
+  $("s-views").textContent = fmt(r.videos.reduce((a, v) => a + (v.view_count || 0), 0));
+  $("v-list").innerHTML = r.videos.map(v => `<tr><td>${(v.title || v.video_description || "").slice(0, 60).replace(/</g, "&lt;")}</td><td class="n">${fmt(v.view_count)}</td><td class="n">${fmt(v.like_count)}</td><td class="n">${fmt(v.comment_count)}</td><td class="n">${fmt(v.share_count)}</td></tr>`).join("");
+}
+
+async function loadCreator() {
+  const r = await call("/creator", { token });
+  creator = r.data || {};
+  $("c-avatar").src = creator.creator_avatar_url || ""; $("c-name").textContent = creator.creator_nickname || "";
+  const labels = { PUBLIC_TO_EVERYONE: "Everyone", MUTUAL_FOLLOW_FRIENDS: "Friends", FOLLOWER_OF_CREATOR: "Followers", SELF_ONLY: "Only me" };
+  for (const o of creator.privacy_level_options || []) $("privacy").insertAdjacentHTML("beforeend", `<option value="${o}">${labels[o] || o}</option>`);
+  [["a-comment", "comment_disabled"], ["a-duet", "duet_disabled"], ["a-stitch", "stitch_disabled"]].forEach(([id, k]) => { if (creator[k]) { $(id).disabled = true; $(id).checked = false; } });
+  if (r.error && r.error.code !== "ok") showMsg("TikTok: " + (r.error.message || r.error.code), false);
+  check();
+}
+
+async function loadVideos() {
+  videos = await (await fetch("videos/videos.json", { cache: "no-store" })).json();
+  $("pick").innerHTML = videos.map((v, i) => `<option value="${i}">${v.title}</option>`).join("");
+  pick();
+}
+function pick() { const v = videos[$("pick").value]; if (!v) return; $("preview").src = "videos/" + v.file; $("caption").value = v.caption; check(); }
+$("pick").onchange = pick;
+
+$("commercial").onchange = () => { $("commercial-opts").classList.toggle("hide", !$("commercial").checked); if (!$("commercial").checked) { $("brand-organic").checked = $("brand-content").checked = false; } check(); };
+["brand-organic", "brand-content", "privacy"].forEach(id => $(id).onchange = check);
+$("preview").onloadedmetadata = check;
+
+function check() {
+  const branded = $("brand-content").checked, organic = $("brand-organic").checked;
+  const selfOpt = [...$("privacy").options].find(o => o.value === "SELF_ONLY");
+  if (selfOpt) { selfOpt.disabled = branded; if (branded && $("privacy").value === "SELF_ONLY") $("privacy").value = ""; }
+  const pol = branded ? `<a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a> and ` : "";
+  $("consent").innerHTML = `By posting, you agree to TikTok's ${pol}<a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.`;
+  const tooLong = creator && creator.max_video_post_duration_sec && $("preview").duration > creator.max_video_post_duration_sec;
+  if (tooLong) showMsg(`This video is longer than the ${creator.max_video_post_duration_sec}s allowed for this account.`, false);
+  const commercialOk = !$("commercial").checked || branded || organic;
+  $("btn-post").disabled = !creator || !$("privacy").value || tooLong || !commercialOk;
+}
+
+$("btn-post").onclick = async () => {
+  const v = videos[$("pick").value];
+  $("btn-post").disabled = true; showMsg("Sending your video to TikTok…", true);
+  const r = await call("/publish", {
+    token, video_url: new URL("videos/" + v.file, location.href).href, title: $("caption").value, privacy_level: $("privacy").value,
+    disable_comment: !$("a-comment").checked, disable_duet: !$("a-duet").checked, disable_stitch: !$("a-stitch").checked,
+    brand_content_toggle: $("brand-content").checked, brand_organic_toggle: $("brand-organic").checked, is_aigc: $("aigc").checked,
+  });
+  const id = r.data && r.data.publish_id;
+  if (!id) { showMsg("TikTok refused the post: " + ((r.error && r.error.message) || JSON.stringify(r)), false); $("btn-post").disabled = false; return; }
+  for (let i = 0; i < 40; i++) {
+    await new Promise(s => setTimeout(s, 3000));
+    const s = await call("/status", { token, publish_id: id });
+    const st = s.data && s.data.status;
+    if (st === "PUBLISH_COMPLETE") { showMsg("Posted ✅ It can take a few minutes for the video to appear on your profile.", true); loadProfile(); return; }
+    if (st === "FAILED") { showMsg("Publishing failed: " + (s.data.fail_reason || ""), false); $("btn-post").disabled = false; return; }
+    showMsg("TikTok is processing your video… (" + (st || "pending") + ")", true);
+  }
+  showMsg("Your video was sent. TikTok is still processing it; it will appear on your profile shortly.", true);
+};
+
+function showMsg(t, ok) { const m = $("msg"); m.textContent = t; m.className = "msg " + (ok ? "ok" : "err"); m.style.display = "block"; }
+start();
+</script>
+</body>
+</html>
