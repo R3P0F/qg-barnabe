@@ -13,5 +13,6 @@ export default async function handler(req, res) {
   });
   const j = await r.json();
   if (!j.access_token) return res.status(400).json(j);
-  res.json({ access_token: j.access_token, open_id: j.open_id, scope: j.scope, expires_in: j.expires_in });
+  res.json({ access_token: j.access_token, open_id: j.open_id, scope: j.scope, expires_in: j.expires_in,
+    refresh_token: j.refresh_token, refresh_expires_in: j.refresh_expires_in });
 }
